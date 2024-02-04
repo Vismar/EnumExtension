@@ -1,3 +1,5 @@
 /External/
-/cmake-build-debug/
+/cmake-build-*/
+/build/
 /.idea/
+/.vscode/

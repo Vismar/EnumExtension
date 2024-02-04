@@ -1,25 +1,29 @@
-#include <EnumExtension.hpp>
+#include "EnumExtension.hpp"
+
+#include <cstdint>
+#include <random>
+
 #include <gtest/gtest.h>
 
 // Enum values
-constexpr int EnumFirstValue = -45;
-constexpr int EnumNegativeValue = -31;
-constexpr int EnumMiddleValue = 0;
-constexpr int EnumPositiveValue = -4;
-constexpr int EnumLastValue = 42;
+constexpr inline auto EnumFirstValue = -45;
+constexpr inline auto EnumNegativeValue = -31;
+constexpr inline auto EnumMiddleValue = 0;
+constexpr inline auto EnumPositiveValue = -4;
+constexpr inline auto EnumLastValue = 42;
 
 // Not enum values
-constexpr int FirstNotEnumValue = -32;
-constexpr int SecondNotEnumValue = -2;
-constexpr int ThirdNotEnumValue = 2;
-constexpr int FourthNotEnumValue = 52;
+constexpr inline auto FirstNotEnumValue = -32;
+constexpr inline auto SecondNotEnumValue = -2;
+constexpr inline auto ThirdNotEnumValue = 2;
+constexpr inline auto FourthNotEnumValue = 52;
 
 // Out of scope values
-constexpr int LowerOutOfScopeValue = -129;
-constexpr int UpperOutOfScopeValue = 129;
+constexpr inline auto LowerOutOfScopeValue = -129;
+constexpr inline auto UpperOutOfScopeValue = 129;
 
 // Standard enum
-enum StandardEnum
+enum StandardEnum : std::int32_t
 {
     FirstValue    = EnumFirstValue,
     NegativeValue = EnumNegativeValue,

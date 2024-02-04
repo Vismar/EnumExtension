@@ -4,13 +4,15 @@
 #include <type_traits>
 #include <string_view>
 
-#ifndef MIN_VALUE
-#define MIN_VALUE -128
+#ifndef ENUM_HELPER_MIN_VALUE
+#define ENUM_HELPER_MIN_VALUE (-128)
 #endif
-#ifndef MAX_VALUE
-#define MAX_VALUE 128
+#ifndef ENUM_HELPER_MAX_VALUE
+#define ENUM_HELPER_MAX_VALUE 128
 #endif
-#define NUMBER_OF_VALUES MAX_VALUE - MIN_VALUE + 1
+#ifndef ENUM_HELPER_NUMBER_OF_VALUES
+#define ENUM_HELPER_NUMBER_OF_VALUES (ENUM_HELPER_MAX_VALUE - ENUM_HELPER_MIN_VALUE + 1)
+#endif
 
 class Enum
 {
@@ -18,30 +20,29 @@ private:
     template <auto... Args>
     constexpr static std::string_view GetEnumeratorNamesHelper()
     {
-#if defined(__GNUC__) || defined(__clang__)
+#if defined(__clang__) || defined(__GNUC__)
         constexpr std::string_view name{__PRETTY_FUNCTION__};
 #elif defined(_MSC_VER)
         constexpr std::string_view name{__FUNCSIG__};
 #else
 #error unknown compiler
 #endif
-
         return name;
     }
 
     template <typename EnumType, auto... Args>
     constexpr static std::string_view GetEnumeratorNames(std::index_sequence<Args...>)
     {
-        return GetEnumeratorNamesHelper<static_cast<EnumType>(Args + MIN_VALUE)...>();
+        return GetEnumeratorNamesHelper<static_cast<EnumType>(Args + ENUM_HELPER_MIN_VALUE)...>();
     }
 
     template <typename EnumType>
-    constexpr static std::array<EnumType, NUMBER_OF_VALUES> GetEnumValues()
+    constexpr static std::array<EnumType, ENUM_HELPER_NUMBER_OF_VALUES> GetEnumValues()
     {
-        std::array<EnumType, NUMBER_OF_VALUES> array{};
-        for (int i = 0; i < NUMBER_OF_VALUES; ++i)
+        std::array<EnumType, ENUM_HELPER_NUMBER_OF_VALUES> array{};
+        for (int i = 0; i < ENUM_HELPER_NUMBER_OF_VALUES; ++i)
         {
-            array[i] = static_cast<EnumType>(MIN_VALUE + i);
+            array[i] = static_cast<EnumType>(ENUM_HELPER_MIN_VALUE + i);
         }
 
         return array;
@@ -57,8 +58,8 @@ private:
         for (std::size_t i = 0; i < N && end != std::string_view::npos; i++)
         {
             end = str.find_first_of(',', start);
-            auto substr = str.substr(start, end - start);
-            array[i] = substr;
+            auto substring = str.substr(start, end - start);
+            array[i] = substring;
             start = end + 2;
         }
 
@@ -73,34 +74,33 @@ public:
     {
         using namespace std::literals;
 
-#if defined(__GNUC__)
-        constexpr auto start_bit = "[with auto ...Args = {"sv;
-        constexpr auto end_bit = "};"sv;
-#elif defined(__clang__)
-        constexpr auto start_bit = "[Args = <"sv;
-        constexpr auto end_bit = ">]"sv;
+#if defined(__clang__)
+        constexpr auto startingPart = "[Args = <"sv;
+        constexpr auto endingPart = ">]"sv;
+#elif defined(__GNUC__)
+        constexpr auto startingPart = "[with auto ...Args = {"sv;
+        constexpr auto endingPart = "};"sv;
 #elif defined(_MSC_VER)
-        // TODO: Check what msc compiler returns
-        constexpr auto start_bit = "detail::type_name<"sv;
-        constexpr auto end_bit = ">("sv;
+        constexpr auto startingPart = "__cdecl GetEnumeratorNamesHelper<"sv;
+        constexpr auto endingPart = ">("sv;
 #else
-#error unknown compiler
+#error Unknown compiler
 #endif
 
         constexpr std::string_view enumValuesAsString =
-                GetEnumeratorNames<EnumType>(std::make_index_sequence<NUMBER_OF_VALUES>{});
+            GetEnumeratorNames<EnumType>(std::make_index_sequence<ENUM_HELPER_NUMBER_OF_VALUES>{});
 
-        constexpr size_t start = enumValuesAsString.find(start_bit);
-        constexpr size_t end = enumValuesAsString.rfind(end_bit);
+        constexpr size_t start = enumValuesAsString.find(startingPart);
+        constexpr size_t end = enumValuesAsString.rfind(endingPart);
         constexpr bool failed = start == std::string_view::npos || end == std::string_view::npos || end <= start;
         static_assert(!failed);
 
         constexpr auto trimmedValues =
-                enumValuesAsString.substr(start + start_bit.size(), end - start - start_bit.size());
-        constexpr std::array<std::string_view, NUMBER_OF_VALUES> valueArray =
-                Split<NUMBER_OF_VALUES>(trimmedValues.data());
-        constexpr std::array<EnumType, NUMBER_OF_VALUES> enumValues = GetEnumValues<EnumType>();
-        for (auto i = 0; i < NUMBER_OF_VALUES; ++i)
+            enumValuesAsString.substr(start + startingPart.size(), end - start - startingPart.size());
+        constexpr std::array<std::string_view, ENUM_HELPER_NUMBER_OF_VALUES> valueArray =
+            Split<ENUM_HELPER_NUMBER_OF_VALUES>(trimmedValues.data());
+        constexpr std::array<EnumType, ENUM_HELPER_NUMBER_OF_VALUES> enumValues = GetEnumValues<EnumType>();
+        for (auto i = 0; i < ENUM_HELPER_NUMBER_OF_VALUES; ++i)
         {
             if (value == enumValues[i])
             {
